@@ -19,36 +19,38 @@ def get_user_role(cid: int, eid: int) -> str:
     return "EMPLOYEE"
 
 
-# ----------------------
-# Login route
-# ----------------------
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json() or {}
     username = data.get('username')
     password = data.get('password')
 
+    # 1) basic validation
     if not username or not password:
         return jsonify({"message": "Username and password required"}), 400
 
+    # 2) lookup user
     user = UserAccount.query.filter_by(username=username).first()
     if not user:
+        # username not found
         return jsonify({"message": "Invalid username or password"}), 401
 
-    # NOTE: existing sample_data.sql stores plain 'password'
-    # so check both hashed and plain for now:
+    # 3) password check
+    # sample_data.sql might store plaintext "password" for dev users.
+    # So accept either a real hash or a raw 'password'.
     if not (check_password_hash(user.passhash, password) or user.passhash == "password"):
         return jsonify({"message": "Invalid username or password"}), 401
 
-    # figure out role
+    # 4) figure out role from company_admin / department_manager tables
     role = get_user_role(user.cid, user.eid)
 
-    # store in session
+    # 5) store info in session
     session['cid'] = user.cid
     session['eid'] = user.eid
     session['username'] = user.username
     session['role'] = role
 
+    # 6) return info to frontend
     return jsonify({
         "message": "Login successful!",
         "cid": user.cid,
@@ -58,18 +60,12 @@ def login():
     }), 200
 
 
-# ----------------------
-# Logout route
-# ----------------------
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return jsonify({"message": "Logged out successfully!"})
 
 
-# ----------------------
-# Register route (still optional)
-# ----------------------
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json() or {}
