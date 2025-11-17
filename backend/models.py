@@ -2,7 +2,17 @@ from app import db
 from sqlalchemy.sql import func
 from sqlalchemy import Enum
 
+"""
 
+This file defines the database models for a company employee management system using Flask-SQLAlchemy.
+
+It tells Flask-SQLAlchemy how to structure the database tables, including columns, primary keys, composite keys, and relationships between tables.
+Each class represents a table, and each attribute of the class represents a column in that table.
+
+This file also enforces the relationships between tables, such as foreign keys and constraints, ensuring data integrity.
+Without this file, Flask-SQLAlchemy wouldn’t know how to create, query, or update the database, and the backend application would not be able to interact with the database correctly.
+
+"""
 # --------------------
 # Company table
 # --------------------
