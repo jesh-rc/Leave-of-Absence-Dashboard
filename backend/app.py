@@ -11,9 +11,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS # 
 
 db = SQLAlchemy(app) # Creates the SQLAlchemy object that we will use to interact with the database
 
-@app.route('/')
+@app.route('/') # Whenever a user visits the root URL, this function will be called
 def home():
-    return {"message": "Flask backend connected to Render PostgreSQL!"}
+    return {"message": "Flask backend connected to PostgreSQL!"}
 
-if __name__ == '__main__':
+if __name__ == '__main__': # If this script is run directly, start the Flask development server. If it is imported as a module, do not start the server.
     app.run(debug=True)

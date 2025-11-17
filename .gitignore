@@ -1,1 +1,8 @@
+# Ignore environment variable files
 backend/.env
+
+# Python cache / compiled files
+backend/__pycache__/
+
+# Virtual environment
+backend/venv/
