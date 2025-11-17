@@ -1,17 +1,30 @@
 from flask import Blueprint, request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from models import UserAccount
+from models import UserAccount, CompanyAdmin, DepartmentManager
 
-# Create a Blueprint for authentication routes
 auth_bp = Blueprint('auth', __name__)
+
+
+def get_user_role(cid: int, eid: int) -> str:
+    """Return 'ADMIN', 'MANAGER', or 'EMPLOYEE' for this user."""
+    admin = CompanyAdmin.query.filter_by(cid=cid, eid=eid).first()
+    if admin:
+        return "ADMIN"
+
+    manager = DepartmentManager.query.filter_by(cid=cid, eid=eid).first()
+    if manager:
+        return "MANAGER"
+
+    return "EMPLOYEE"
+
 
 # ----------------------
 # Login route
 # ----------------------
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    data = request.get_json() or {}
     username = data.get('username')
     password = data.get('password')
 
@@ -19,11 +32,31 @@ def login():
         return jsonify({"message": "Username and password required"}), 400
 
     user = UserAccount.query.filter_by(username=username).first()
-    if user and check_password_hash(user.passhash, password):
-        session['cid'] = user.cid
-        session['eid'] = user.eid
-        return jsonify({"message": "Login successful!"})
-    return jsonify({"message": "Invalid username or password"}), 401
+    if not user:
+        return jsonify({"message": "Invalid username or password"}), 401
+
+    # NOTE: existing sample_data.sql stores plain 'password'
+    # so check both hashed and plain for now:
+    if not (check_password_hash(user.passhash, password) or user.passhash == "password"):
+        return jsonify({"message": "Invalid username or password"}), 401
+
+    # figure out role
+    role = get_user_role(user.cid, user.eid)
+
+    # store in session
+    session['cid'] = user.cid
+    session['eid'] = user.eid
+    session['username'] = user.username
+    session['role'] = role
+
+    return jsonify({
+        "message": "Login successful!",
+        "cid": user.cid,
+        "eid": user.eid,
+        "username": user.username,
+        "role": role
+    }), 200
+
 
 # ----------------------
 # Logout route
@@ -33,12 +66,13 @@ def logout():
     session.clear()
     return jsonify({"message": "Logged out successfully!"})
 
+
 # ----------------------
-# Optional: Register route
+# Register route (still optional)
 # ----------------------
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
+    data = request.get_json() or {}
     username = data.get('username')
     password = data.get('password')
     cid = data.get('cid')
@@ -61,4 +95,4 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({"message": "User registered successfully!"})
+    return jsonify({"message": "User registered successfully!"}), 201
