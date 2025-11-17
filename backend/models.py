@@ -2,132 +2,129 @@ from app import db
 from sqlalchemy.sql import func
 from sqlalchemy import Enum
 
-"""
+LEAVE_TYPES = ('Vacation', 'Personal', 'Sick')
 
-This file defines the database models for a company employee management system using Flask-SQLAlchemy.
-
-It tells Flask-SQLAlchemy how to structure the database tables, including columns, primary keys, composite keys, and relationships between tables.
-Each class represents a table, and each attribute of the class represents a column in that table.
-
-This file also enforces the relationships between tables, such as foreign keys and constraints, ensuring data integrity.
-Without this file, Flask-SQLAlchemy wouldn’t know how to create, query, or update the database, and the backend application would not be able to interact with the database correctly.
-
-"""
 # --------------------
 # Company table
 # --------------------
 class Company(db.Model):
     __tablename__ = "company"
-
-    # Columns
-    Cid = db.Column(db.Integer, primary_key=True)  # Company ID
-    Name = db.Column(db.String(100), nullable=False)  # Company name
-    AdminID = db.Column(db.Integer, nullable=False)  # Admin's Employee ID
-
-    __table_args__ = (
-        db.ForeignKeyConstraint(["AdminID", "Cid"], ["employee.Eid", "employee.Cid"]),
-    )
-
-# --------------------
-# Employee table (composite PK: Eid + Cid)
-# --------------------
-class Employee(db.Model):
-    __tablename__ = "employee"
-
-    # Columns
-    Eid = db.Column(db.Integer, nullable=False)  # Employee ID
-    Cid = db.Column(db.Integer, db.ForeignKey("company.Cid"), nullable=False)  # Company ID
-    Did = db.Column(db.Integer, db.ForeignKey("department.Did"), nullable=False)  # Department ID
-    Fname = db.Column(db.String(50), nullable=False)
-    Lname = db.Column(db.String(50), nullable=False)
-
-    __table_args__ = (
-        db.PrimaryKeyConstraint("Eid", "Cid"),
-        db.ForeignKeyConstraint(
-            ["Did", "Cid"], ["department.Did", "department.Cid"]
-        ),
-    )
+    cid = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
 
 
 # --------------------
-# Department table (composite PK: Did + Cid)
+# Department table
 # --------------------
 class Department(db.Model):
     __tablename__ = "department"
-
-    # Columns
-    Did = db.Column(db.Integer, nullable=False)   # Department ID
-    Cid = db.Column(db.Integer, db.ForeignKey("company.Cid"), nullable=False)  # Company ID
-    Dname = db.Column(db.String(100), nullable=False)  # Department name
-    ManagerID = db.Column(db.Integer, nullable=True)   # Manager’s Employee ID
+    did = db.Column(db.Integer, nullable=False)
+    cid = db.Column(db.Integer, nullable=False)
+    dname = db.Column(db.String(100), nullable=False)
 
     __table_args__ = (
-        db.PrimaryKeyConstraint("Did", "Cid"),
-        db.ForeignKeyConstraint(
-            ["ManagerID", "Cid"], ["employee.Eid", "employee.Cid"]
-        ),
+        db.PrimaryKeyConstraint("did", "cid"),
+        db.ForeignKeyConstraint(["cid"], ["company.cid"]),
     )
 
 
 # --------------------
-# LeaveRequest table (PK: Rid)
+# Employee table
 # --------------------
-
-LEAVE_TYPES = ('Vacation', 'Personal', 'Sick')
-
-class LeaveRequest(db.Model):
-    __tablename__ = "leaverequest"
-
-    Rid = db.Column(db.Integer, primary_key=True)  # Unique request ID
-    Eid = db.Column(db.Integer, nullable=False)
-    Cid = db.Column(db.Integer, nullable=False)
-    Sdate = db.Column(db.Date, nullable=False)
-    Edate = db.Column(db.Date, nullable=False)
-    Type = db.Column(Enum(*LEAVE_TYPES, name="leave_type_enum"), nullable=False)  # maps to leave type
-    Status = db.Column(db.String(20), default="Pending", nullable=False)
-    ApprovedBy = db.Column(db.Integer, nullable=True)
-    CreatedAt = db.Column(db.DateTime, server_default=db.func.current_timestamp(), nullable=False)
+class Employee(db.Model):
+    __tablename__ = "employee"
+    eid = db.Column(db.Integer, nullable=False)
+    cid = db.Column(db.Integer, nullable=False)
+    did = db.Column(db.Integer, nullable=False)
+    fname = db.Column(db.String(50), nullable=False)
+    lname = db.Column(db.String(50), nullable=False)
 
     __table_args__ = (
-        db.ForeignKeyConstraint(["Eid", "Cid"], ["employee.Eid", "employee.Cid"]),
-        db.ForeignKeyConstraint(["ApprovedBy", "Cid"], ["employee.Eid", "employee.Cid"]),
-        db.ForeignKeyConstraint(["Cid"], ["company.Cid"]),
-        db.ForeignKeyConstraint(["Cid", "Eid", "Type"], ["leave_balance.Cid", "leave_balance.Eid", "leave_balance.LeaveType"]),
+        db.PrimaryKeyConstraint("eid", "cid"),
+        db.ForeignKeyConstraint(["cid"], ["company.cid"]),
+        db.ForeignKeyConstraint(["did", "cid"], ["department.did", "department.cid"]),
     )
 
 
 # --------------------
-# LeaveBalance table (composite PK: Cid + Eid + LeaveType)
+# DepartmentManager table
+# --------------------
+class DepartmentManager(db.Model):
+    __tablename__ = "department_manager"
+    cid = db.Column(db.Integer, nullable=False)
+    did = db.Column(db.Integer, nullable=False)
+    eid = db.Column(db.Integer, nullable=False)
+
+    __table_args__ = (
+        db.PrimaryKeyConstraint("cid", "did"),
+        db.ForeignKeyConstraint(["cid", "did"], ["department.cid", "department.did"]),
+        db.ForeignKeyConstraint(["cid", "eid"], ["employee.cid", "employee.eid"]),
+    )
+
+
+# --------------------
+# CompanyAdmin table
+# --------------------
+class CompanyAdmin(db.Model):
+    __tablename__ = "company_admin"
+    cid = db.Column(db.Integer, nullable=False)
+    eid = db.Column(db.Integer, nullable=False)
+
+    __table_args__ = (
+        db.PrimaryKeyConstraint("cid", "eid"),
+        db.ForeignKeyConstraint(["cid", "eid"], ["employee.cid", "employee.eid"]),
+    )
+
+
+# --------------------
+# LeaveBalance table
 # --------------------
 class LeaveBalance(db.Model):
     __tablename__ = "leave_balance"
-
-    Cid = db.Column(db.Integer, nullable=False)
-    Eid = db.Column(db.Integer, nullable=False)
-    LeaveType = db.Column(Enum(*LEAVE_TYPES, name="leave_type_enum"), nullable=False)
-    TotalDays = db.Column(db.Integer, nullable=False)
-    UsedDays = db.Column(db.Integer, default=0)
-    RemainingDays = db.Column(db.Integer, default=0)
+    cid = db.Column(db.Integer, nullable=False)
+    eid = db.Column(db.Integer, nullable=False)
+    leavetype = db.Column(Enum(*LEAVE_TYPES, name="leave_type_enum"), nullable=False)
+    totaldays = db.Column(db.Integer, nullable=False)
+    useddays = db.Column(db.Integer, default=0)
+    remainingdays = db.Column(db.Integer, default=0)
 
     __table_args__ = (
-        db.PrimaryKeyConstraint("Cid", "Eid", "LeaveType"),
-        # Composite foreign key to ensure the employee exists in the company
-        db.ForeignKeyConstraint(["Eid", "Cid"], ["employee.Eid", "employee.Cid"]),
+        db.PrimaryKeyConstraint("cid", "eid", "leavetype"),
+        db.ForeignKeyConstraint(["cid", "eid"], ["employee.cid", "employee.eid"]),
     )
 
 
 # --------------------
-# UserAccount table (composite PK: Cid + Eid)
+# LeaveRequest table
+# --------------------
+class LeaveRequest(db.Model):
+    __tablename__ = "leaverequest"
+    rid = db.Column(db.Integer, primary_key=True)
+    eid = db.Column(db.Integer, nullable=False)
+    cid = db.Column(db.Integer, nullable=False)
+    sdate = db.Column(db.Date, nullable=False)
+    edate = db.Column(db.Date, nullable=False)
+    type = db.Column(Enum(*LEAVE_TYPES, name="leave_type_enum"), nullable=False)
+    status = db.Column(db.String(20), default="Pending", nullable=False)
+    approvedby = db.Column(db.Integer, nullable=True)
+    createdat = db.Column(db.DateTime, server_default=func.current_timestamp(), nullable=False)
+
+    __table_args__ = (
+        db.ForeignKeyConstraint(["cid", "eid"], ["employee.cid", "employee.eid"]),
+    )
+
+
+# --------------------
+# UserAccount table
 # --------------------
 class UserAccount(db.Model):
     __tablename__ = "user_account"
-
-    Cid = db.Column(db.Integer, nullable=False)
-    Eid = db.Column(db.Integer, nullable=False)
-    User = db.Column(db.String(50), nullable=False)       # Username
-    PassHash = db.Column(db.String(255), nullable=False)  # Hashed password
+    cid = db.Column(db.Integer, nullable=False)
+    eid = db.Column(db.Integer, nullable=False)
+    username = db.Column(db.String(50), nullable=False)
+    passhash = db.Column(db.String(255), nullable=False)
 
     __table_args__ = (
-        db.PrimaryKeyConstraint("Cid", "Eid"),
-        db.ForeignKeyConstraint(["Cid", "Eid"], ["employee.Cid", "employee.Eid"]),
+        db.PrimaryKeyConstraint("cid", "eid"),
+        db.ForeignKeyConstraint(["cid", "eid"], ["employee.cid", "employee.eid"]),
     )
