@@ -1,91 +1,175 @@
--- =========================================================
--- COMPANY
--- =========================================================
-INSERT INTO company (Cid, Name, AdminID)
-VALUES
-(1, 'TechNova Inc', 101),
-(2, 'HealthPlus Corp', 201);
+INSERT INTO company (cid, name) VALUES
+(1, 'TechNova Inc'),
+(2, 'GlobalSoft Ltd'),
+(3, 'InnoWorks');
 
--- =========================================================
--- DEPARTMENT
--- =========================================================
-INSERT INTO department (Did, Cid, Dname, ManagerID)
-VALUES
-(1, 1, 'HR', 101),
-(2, 1, 'Engineering', 102),
-(3, 1, 'Sales', 103),
-(1, 2, 'HR', 201),
-(2, 2, 'Support', 202),
-(3, 2, 'IT', 203);
+INSERT INTO department (did, cid, dname) VALUES
+(1,1,'HR'),
+(2,1,'Engineering'),
+(3,1,'Sales'),
+(1,2,'HR'),
+(2,2,'Engineering'),
+(3,2,'Sales'),
+(1,3,'HR'),
+(2,3,'Engineering'),
+(3,3,'Sales');
 
--- =========================================================
--- EMPLOYEE
--- =========================================================
-INSERT INTO employee (Eid, Cid, Did, Fname, Lname)
-VALUES
-(101, 1, 1, 'Alice', 'Johnson'),   -- Manager HR
-(104, 1, 1, 'Iris', 'Chen'),       -- Extra HR employee
-(102, 1, 2, 'Bob', 'Lee'),         -- Manager Engineering
-(105, 1, 2, 'Jack', 'Smith'),      -- Extra Engineering
-(103, 1, 3, 'Clara', 'Wong'),      -- Manager Sales
-(106, 1, 3, 'Liam', 'Davis'),      -- Extra Sales
-(201, 2, 1, 'David', 'Nguyen'),    -- Manager HR
-(204, 2, 1, 'Mona', 'Patel'),      -- Extra HR
-(202, 2, 2, 'Ella', 'Brown'),      -- Manager Support
-(205, 2, 2, 'Nate', 'Kim'),        -- Extra Support
-(203, 2, 3, 'Frank', 'Miller'),    -- Manager IT
-(206, 2, 3, 'Olivia', 'Lopez');    -- Extra IT
+INSERT INTO employee (eid, cid, did, fname, lname) VALUES
+(101,1,1,'Alice','Johnson'),
+(102,1,2,'Bob','Lee'),
+(103,1,3,'Clara','Wong'),
+(104,1,1,'Emily','Stone'),
+(105,1,1,'Jack','White'),
+(106,1,1,'Olivia','Green'),
+(107,1,1,'Liam','Brown'),
+(108,1,1,'Mia','Taylor'),
+(109,1,2,'Noah','Lee'),
+(110,1,2,'Emma','Davis'),
+(111,1,2,'James','Smith'),
+(112,1,2,'Sophia','Clark'),
+(113,1,2,'Ethan','Harris'),
+(114,1,3,'Ava','Walker'),
+(115,1,3,'Lucas','Adams'),
+(116,1,3,'Isabella','Evans'),
+(117,1,3,'Mason','Baker'),
+(118,1,3,'Charlotte','Hall'),
+(201,2,1,'Daniel','King'),
+(202,2,2,'Ella','Scott'),
+(203,2,3,'Henry','Young'),
+(204,2,1,'Grace','Green'),
+(205,2,1,'Jack','Roberts'),
+(206,2,1,'Chloe','Turner'),
+(207,2,1,'Liam','Hill'),
+(208,2,1,'Sophie','Carter'),
+(209,2,2,'Ethan','Evans'),
+(210,2,2,'Olivia','Collins'),
+(211,2,2,'Noah','Mitchell'),
+(212,2,2,'Emma','Walker'),
+(213,2,2,'Lucas','Ward'),
+(214,2,3,'Isabella','Bennett'),
+(215,2,3,'Mason','Brooks'),
+(216,2,3,'Ava','Powell'),
+(217,2,3,'Sophia','Bailey'),
+(218,2,3,'James','Reed'),
+(301,3,1,'Lily','Morgan'),
+(302,3,2,'Jack','Bell'),
+(303,3,3,'Ella','Murphy'),
+(304,3,1,'Mia','Cooper'),
+(305,3,1,'Noah','Cook'),
+(306,3,1,'Olivia','Bell'),
+(307,3,1,'Liam','Bailey'),
+(308,3,1,'Emma','Ward'),
+(309,3,2,'Ava','Bailey'),
+(310,3,2,'Ethan','Cox'),
+(311,3,2,'Sophia','Foster'),
+(312,3,2,'James','Gray'),
+(313,3,2,'Lucas','James'),
+(314,3,3,'Isabella','Kelly'),
+(315,3,3,'Mason','Price'),
+(316,3,3,'Charlotte','Bennett'),
+(317,3,3,'Ella','Brooks'),
+(318,3,3,'Jack','Murphy');
 
--- =========================================================
--- LEAVE BALANCE
--- =========================================================
-INSERT INTO leave_balance (Cid, Eid, LeaveType, TotalDays, UsedDays, RemainingDays)
-VALUES
-(1, 101, 'Vacation', 15, 10, 5),
-(1, 104, 'Vacation', 15, 5, 10),
-(1, 102, 'Sick', 10, 6, 4),
-(1, 105, 'Sick', 10, 3, 7),
-(1, 103, 'Personal', 5, 3, 2),
-(1, 106, 'Personal', 5, 1, 4),
-(2, 201, 'Vacation', 15, 8, 7),
-(2, 204, 'Vacation', 15, 4, 11),
-(2, 202, 'Sick', 10, 2, 8),
-(2, 205, 'Sick', 10, 0, 10),
-(2, 203, 'Personal', 5, 2, 3),
-(2, 206, 'Personal', 5, 1, 4);
+INSERT INTO department_manager (cid, did, eid) VALUES
+(1,1,101),(1,2,102),(1,3,103),
+(2,1,201),(2,2,202),(2,3,203),
+(3,1,301),(3,2,302),(3,3,303);
 
--- =========================================================
--- LEAVE REQUESTS
--- =========================================================
-INSERT INTO leaverequest (Eid, Cid, Sdate, Edate, Type, Status, ApprovedBy, CreatedAt)
-VALUES
-(101, 1, '2025-09-01', '2025-09-05', 'Vacation', 'Approved', 102, CURRENT_DATE - 40),
-(102, 1, '2025-10-10', '2025-10-12', 'Sick', 'Pending', NULL, CURRENT_DATE - 5),
-(103, 1, '2025-07-15', '2025-07-16', 'Personal', 'Approved', 101, CURRENT_DATE - 20),
-(104, 1, '2025-10-01', '2025-10-02', 'Vacation', 'Pending', NULL, CURRENT_DATE - 2),
-(105, 1, '2025-09-20', '2025-09-22', 'Sick', 'Rejected', 102, CURRENT_DATE - 10),
-(106, 1, '2025-09-25', '2025-09-27', 'Personal', 'Approved', 103, CURRENT_DATE - 15),
-(201, 2, '2025-08-01', '2025-08-10', 'Vacation', 'Approved', 203, CURRENT_DATE - 35),
-(202, 2, '2025-09-15', '2025-09-17', 'Sick', 'Pending', NULL, CURRENT_DATE - 3),
-(203, 2, '2025-10-01', '2025-10-02', 'Personal', 'Rejected', 201, CURRENT_DATE - 7),
-(204, 2, '2025-09-28', '2025-09-30', 'Vacation', 'Pending', NULL, CURRENT_DATE - 4),
-(205, 2, '2025-09-22', '2025-09-24', 'Sick', 'Approved', 202, CURRENT_DATE - 12),
-(206, 2, '2025-10-02', '2025-10-03', 'Personal', 'Approved', 203, CURRENT_DATE - 1);
+INSERT INTO company_admin (cid, eid) VALUES
+(1,101),(2,201),(3,301);
 
--- =========================================================
--- USER ACCOUNT
--- =========================================================
-INSERT INTO user_account (Cid, Eid, User, PassHash)
-VALUES
-(1, 101, 'alicej', 'hash123'),
-(1, 102, 'boblee', 'hash234'),
-(1, 103, 'claraw', 'hash345'),
-(1, 104, 'irisc', 'hash890'),
-(1, 105, 'jacks', 'hash901'),
-(1, 106, 'liamd', 'hash902'),
-(2, 201, 'davidn', 'hash456'),
-(2, 202, 'ellab', 'hash567'),
-(2, 203, 'frankm', 'hash678'),
-(2, 204, 'monap', 'hash789'),
-(2, 205, 'natek', 'hash890'),
-(2, 206, 'olivial', 'hash891');
+INSERT INTO leave_balance (cid, eid, leavetype, totaldays, useddays, remainingdays) VALUES
+(1,101,'Vacation',15,0,15),(1,102,'Vacation',15,0,15),(1,103,'Vacation',15,0,15),
+(1,104,'Vacation',15,0,15),(1,105,'Vacation',15,0,15),(1,106,'Vacation',15,0,15),
+(1,107,'Vacation',15,0,15),(1,108,'Vacation',15,0,15),(1,109,'Vacation',15,0,15),
+(1,110,'Vacation',15,0,15),(1,111,'Vacation',15,0,15),(1,112,'Vacation',15,0,15),
+(1,113,'Vacation',15,0,15),(1,114,'Vacation',15,0,15),(1,115,'Vacation',15,0,15),
+(1,116,'Vacation',15,0,15),(1,117,'Vacation',15,0,15),(1,118,'Vacation',15,0,15),
+(2,201,'Vacation',15,0,15),(2,202,'Vacation',15,0,15),(2,203,'Vacation',15,0,15),
+(2,204,'Vacation',15,0,15),(2,205,'Vacation',15,0,15),(2,206,'Vacation',15,0,15),
+(2,207,'Vacation',15,0,15),(2,208,'Vacation',15,0,15),(2,209,'Vacation',15,0,15),
+(2,210,'Vacation',15,0,15),(2,211,'Vacation',15,0,15),(2,212,'Vacation',15,0,15),
+(2,213,'Vacation',15,0,15),(2,214,'Vacation',15,0,15),(2,215,'Vacation',15,0,15),
+(2,216,'Vacation',15,0,15),(2,217,'Vacation',15,0,15),(2,218,'Vacation',15,0,15),
+(3,301,'Vacation',15,0,15),(3,302,'Vacation',15,0,15),(3,303,'Vacation',15,0,15),
+(3,304,'Vacation',15,0,15),(3,305,'Vacation',15,0,15),(3,306,'Vacation',15,0,15),
+(3,307,'Vacation',15,0,15),(3,308,'Vacation',15,0,15),(3,309,'Vacation',15,0,15),
+(3,310,'Vacation',15,0,15),(3,311,'Vacation',15,0,15),(3,312,'Vacation',15,0,15),
+(3,313,'Vacation',15,0,15),(3,314,'Vacation',15,0,15),(3,315,'Vacation',15,0,15),
+(3,316,'Vacation',15,0,15),(3,317,'Vacation',15,0,15),(3,318,'Vacation',15,0,15);
+
+INSERT INTO user_account (cid, eid, username, passhash) VALUES
+(1,101,'alicej','password'),(1,102,'boblee','password'),(1,103,'claraw','password'),
+(1,104,'emilys','password'),(1,105,'jackw','password'),(1,106,'oliviag','password'),
+(1,107,'liamb','password'),(1,108,'miat','password'),(1,109,'noahl','password'),
+(1,110,'emma','password'),(1,111,'jamess','password'),(1,112,'sophiac','password'),
+(1,113,'ethan','password'),(1,114,'ava','password'),(1,115,'lucas','password'),
+(1,116,'charlotte','password'),(1,117,'mason','password'),(1,118,'miaw','password'),
+(2,201,'danielk','password'),(2,202,'ellas','password'),(2,203,'henryy','password'),
+(2,204,'graceg','password'),(2,205,'jackr','password'),(2,206,'chloet','password'),
+(2,207,'liamh','password'),(2,208,'sophiec','password'),(2,209,'ethane','password'),
+(2,210,'olivia','password'),(2,211,'noahm','password'),(2,212,'emmaw','password'),
+(2,213,'lucasw','password'),(2,214,'isabellab','password'),(2,215,'masonb','password'),
+(2,216,'ava','password'),(2,217,'sophia','password'),(2,218,'jamesr','password'),
+(3,301,'lilym','password'),(3,302,'jackb','password'),(3,303,'ellam','password'),
+(3,304,'miac','password'),(3,305,'noahc','password'),(3,306,'oliviab','password'),
+(3,307,'liamb','password'),(3,308,'emmaw','password'),(3,309,'ava','password'),
+(3,310,'ethanc','password'),(3,311,'sophiaf','password'),(3,312,'jamesg','password'),
+(3,313,'lucasj','password'),(3,314,'isabellak','password'),(3,315,'masonp','password'),
+(3,316,'charlotte','password'),(3,317,'ella','password'),(3,318,'jackm','password');
+
+INSERT INTO leaverequest (rid, eid, cid, sdate, edate, type, status, approvedby, createdat) VALUES
+(1,101,1,'2025-11-01','2025-11-05','Vacation','Approved',101,NOW()),
+(2,102,1,'2025-11-03','2025-11-07','Vacation','Pending',NULL,NOW()),
+(3,103,1,'2025-11-05','2025-11-10','Vacation','Pending',NULL,NOW()),
+(4,104,1,'2025-11-08','2025-11-12','Vacation','Pending',NULL,NOW()),
+(5,105,1,'2025-11-10','2025-11-15','Vacation','Pending',NULL,NOW()),
+(6,106,1,'2025-11-12','2025-11-16','Vacation','Pending',NULL,NOW()),
+(7,107,1,'2025-11-14','2025-11-18','Vacation','Pending',NULL,NOW()),
+(8,108,1,'2025-11-16','2025-11-20','Vacation','Pending',NULL,NOW()),
+(9,109,1,'2025-11-18','2025-11-22','Vacation','Pending',NULL,NOW()),
+(10,110,1,'2025-11-20','2025-11-24','Vacation','Pending',NULL,NOW()),
+(11,111,1,'2025-11-22','2025-11-26','Vacation','Pending',NULL,NOW()),
+(12,112,1,'2025-11-24','2025-11-28','Vacation','Pending',NULL,NOW()),
+(13,113,1,'2025-11-26','2025-11-30','Vacation','Pending',NULL,NOW()),
+(14,114,1,'2025-11-28','2025-12-02','Vacation','Pending',NULL,NOW()),
+(15,115,1,'2025-11-30','2025-12-04','Vacation','Pending',NULL,NOW()),
+(16,116,1,'2025-12-02','2025-12-06','Vacation','Pending',NULL,NOW()),
+(17,117,1,'2025-12-04','2025-12-08','Vacation','Pending',NULL,NOW()),
+(18,118,1,'2025-12-06','2025-12-10','Vacation','Pending',NULL,NOW()),
+(19,201,2,'2025-11-01','2025-11-05','Vacation','Approved',201,NOW()),
+(20,202,2,'2025-11-03','2025-11-07','Vacation','Pending',NULL,NOW()),
+(21,203,2,'2025-11-05','2025-11-10','Vacation','Pending',NULL,NOW()),
+(22,204,2,'2025-11-08','2025-11-12','Vacation','Pending',NULL,NOW()),
+(23,205,2,'2025-11-10','2025-11-15','Vacation','Pending',NULL,NOW()),
+(24,206,2,'2025-11-12','2025-11-16','Vacation','Pending',NULL,NOW()),
+(25,207,2,'2025-11-14','2025-11-18','Vacation','Pending',NULL,NOW()),
+(26,208,2,'2025-11-16','2025-11-20','Vacation','Pending',NULL,NOW()),
+(27,209,2,'2025-11-18','2025-11-22','Vacation','Pending',NULL,NOW()),
+(28,210,2,'2025-11-20','2025-11-24','Vacation','Pending',NULL,NOW()),
+(29,211,2,'2025-11-22','2025-11-26','Vacation','Pending',NULL,NOW()),
+(30,212,2,'2025-11-24','2025-11-28','Vacation','Pending',NULL,NOW()),
+(31,213,2,'2025-11-26','2025-11-30','Vacation','Pending',NULL,NOW()),
+(32,214,2,'2025-11-28','2025-12-02','Vacation','Pending',NULL,NOW()),
+(33,215,2,'2025-11-30','2025-12-04','Vacation','Pending',NULL,NOW()),
+(34,216,2,'2025-12-02','2025-12-06','Vacation','Pending',NULL,NOW()),
+(35,217,2,'2025-12-04','2025-12-08','Vacation','Pending',NULL,NOW()),
+(36,218,2,'2025-12-06','2025-12-10','Vacation','Pending',NULL,NOW()),
+(37,301,3,'2025-11-01','2025-11-05','Vacation','Approved',301,NOW()),
+(38,302,3,'2025-11-03','2025-11-07','Vacation','Pending',NULL,NOW()),
+(39,303,3,'2025-11-05','2025-11-10','Vacation','Pending',NULL,NOW()),
+(40,304,3,'2025-11-08','2025-11-12','Vacation','Pending',NULL,NOW()),
+(41,305,3,'2025-11-10','2025-11-15','Vacation','Pending',NULL,NOW()),
+(42,306,3,'2025-11-12','2025-11-16','Vacation','Pending',NULL,NOW()),
+(43,307,3,'2025-11-14','2025-11-18','Vacation','Pending',NULL,NOW()),
+(44,308,3,'2025-11-16','2025-11-20','Vacation','Pending',NULL,NOW()),
+(45,309,3,'2025-11-18','2025-11-22','Vacation','Pending',NULL,NOW()),
+(46,310,3,'2025-11-20','2025-11-24','Vacation','Pending',NULL,NOW()),
+(47,311,3,'2025-11-22','2025-11-26','Vacation','Pending',NULL,NOW()),
+(48,312,3,'2025-11-24','2025-11-28','Vacation','Pending',NULL,NOW()),
+(49,313,3,'2025-11-26','2025-11-30','Vacation','Pending',NULL,NOW()),
+(50,314,3,'2025-11-28','2025-12-02','Vacation','Pending',NULL,NOW()),
+(51,315,3,'2025-11-30','2025-12-04','Vacation','Pending',NULL,NOW()),
+(52,316,3,'2025-12-02','2025-12-06','Vacation','Pending',NULL,NOW()),
+(53,317,3,'2025-12-04','2025-12-08','Vacation','Pending',NULL,NOW()),
+(54,318,3,'2025-12-06','2025-12-10','Vacation','Pending',NULL,NOW());
