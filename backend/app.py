@@ -22,6 +22,7 @@ def create_app():
     from routes.department_manager import dm_bp
     from routes.company_admin import ca_bp
     from routes.leave_balance import lb_bp
+    from routes.views import views_bp          
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(leave_bp, url_prefix="/leave_requests")
@@ -31,6 +32,7 @@ def create_app():
     app.register_blueprint(dm_bp, url_prefix="/department_managers")
     app.register_blueprint(ca_bp, url_prefix="/company_admins")
     app.register_blueprint(lb_bp, url_prefix="/leave_balances")
+    app.register_blueprint(views_bp, url_prefix="/views") 
 
     return app
 
