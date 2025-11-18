@@ -27,6 +27,8 @@ EMAIL_API_URL=https://api.mailgun.net/v3/YOUR_SANDBOX_DOMAIN/messages
 EMAIL_API_KEY=your_mailgun_private_api_key
 EMAIL_FROM_NAME=Leave Dashboard
 EMAIL_FROM_ADDRESS=postmaster@YOUR_SANDBOX_DOMAIN
+```
+
 2. Start the backend server using:
    flask run
 
@@ -34,6 +36,7 @@ EMAIL_FROM_ADDRESS=postmaster@YOUR_SANDBOX_DOMAIN
 
 4. Create a new request with the following details:
 
+```
    Method: POST
    URL: http://127.0.0.1:5000/api/email/test
    Headers:
@@ -44,7 +47,7 @@ EMAIL_FROM_ADDRESS=postmaster@YOUR_SANDBOX_DOMAIN
      "subject": "Test Email",
      "body": "If you received this, the email notification feature is working."
    }
-
+```
 5. Send the request.
 
 6. Check the inbox of the email addresses configured in `email_service.py` or in your `.env` file.
@@ -78,7 +81,7 @@ The project includes several SQL views that are automatically created from `sql/
 
 ---
 
-## Summary for TA Testing
+## Summary for Testing
 
 1. Run:
    python setup_db.py
