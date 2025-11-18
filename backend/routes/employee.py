@@ -53,27 +53,16 @@ def get_employee(cid, eid):
 def create_employee():
     data = request.get_json() or {}
 
-    try:
-        # 1) required fields
-        require_fields(data, ["cid", "eid", "fname", "lname", "email"])
+    # These will raise ValidationError on bad input
+    require_fields(data, ["cid", "eid", "fname", "lname", "email"])
+    cid = ensure_int_in_range(data["cid"], "cid", min_value=1)
+    eid = ensure_int_in_range(data["eid"], "eid", min_value=1)
 
-        # 2) type + range checks for IDs
-        cid = ensure_int_in_range(data["cid"], "cid", min_value=1)
-        eid = ensure_int_in_range(data["eid"], "eid", min_value=1)
+    did = data.get("did")
+    if did is not None:
+        did = ensure_int_in_range(did, "did", min_value=1)
 
-        # did is optional, but if present make sure it's a positive int
-        did = data.get("did")
-        if did is not None:
-            did = ensure_int_in_range(did, "did", min_value=1)
-
-        # 3) email format
-        validate_email(data["email"], "email")
-
-    except ValidationError as ve:
-        return jsonify({
-            "message": ve.message,
-            "details": ve.details
-        }), 400
+    validate_email(data["email"], "email")
 
     new_emp = Employee(
         cid=cid,
@@ -87,6 +76,7 @@ def create_employee():
     db.session.add(new_emp)
     db.session.commit()
     return jsonify({"message": "Employee created!"}), 201
+
 
 
 # Update employee
