@@ -4,5 +4,11 @@ backend/.env
 # Python cache / compiled files
 backend/__pycache__/
 
+backend/services/__pycache__/
+
+backend/routes/__pycache__/
+
+backend/utils/__pycache__/
+
 # Virtual environment
 backend/venv/
