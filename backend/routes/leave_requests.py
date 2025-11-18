@@ -5,6 +5,10 @@ from database import db
 from models import LeaveRequest, Employee
 from routes.auth_utils import login_required, role_required
 from utils.validation import require_fields, parse_date, ValidationError
+from services.email_service import (
+    send_leave_created_email,
+    send_leave_status_update_email,
+)
 
 # Create a Blueprint for leave request routes
 leave_bp = Blueprint('leave', __name__)
@@ -106,6 +110,14 @@ def create_leave_request():
     )
     db.session.add(new_request)
     db.session.commit()
+
+    # send notification email to employee, if configured
+    try:
+        send_leave_created_email(new_request)
+    except Exception as e:
+        # do not break the app if email fails
+        print("Error sending leave created email:", e)
+
     return jsonify({"message": "Leave request created!"}), 201
 
 
@@ -151,6 +163,13 @@ def update_leave_request(rid):
         }), 400
 
     db.session.commit()
+
+      # after updating, send notification about new status
+    try:
+        send_leave_status_update_email(lr)
+    except Exception as e:
+        print("Error sending status update email:", e)
+        
     return jsonify({"message": "Leave request updated!"})
 
 

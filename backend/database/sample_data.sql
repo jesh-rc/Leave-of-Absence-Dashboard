@@ -15,10 +15,10 @@ INSERT INTO department (did, cid, dname) VALUES
 (3,3,'Sales');
 
 INSERT INTO employee (eid, cid, did, fname, lname) VALUES
-(101,1,1,'Alice','Johnson'),
-(102,1,2,'Bob','Lee'),
-(103,1,3,'Clara','Wong'),
-(104,1,1,'Emily','Stone'),
+(101,1,1,'Vishnu','Piraliyil'),
+(102,1,2,'Risanth','Sivarajah'),
+(103,1,3,'Wahab','Alam'),
+(104,1,1,'Jeshurun','Constantine'),
 (105,1,1,'Jack','White'),
 (106,1,1,'Olivia','Green'),
 (107,1,1,'Liam','Brown'),
@@ -99,8 +99,8 @@ INSERT INTO leave_balance (cid, eid, leavetype, totaldays, useddays, remainingda
 (3,316,'Vacation',15,0,15),(3,317,'Vacation',15,0,15),(3,318,'Vacation',15,0,15);
 
 INSERT INTO user_account (cid, eid, username, passhash) VALUES
-(1,101,'alicej','password'),(1,102,'boblee','password'),(1,103,'claraw','password'),
-(1,104,'emilys','password'),(1,105,'jackw','password'),(1,106,'oliviag','password'),
+(1,101,'vishnup','password'),(1,102,'risanths','password'),(1,103,'wahaba','password'),
+(1,104,'jeshurunc','password'),(1,105,'jackw','password'),(1,106,'oliviag','password'),
 (1,107,'liamb','password'),(1,108,'miat','password'),(1,109,'noahl','password'),
 (1,110,'emma','password'),(1,111,'jamess','password'),(1,112,'sophiac','password'),
 (1,113,'ethan','password'),(1,114,'ava','password'),(1,115,'lucas','password'),
