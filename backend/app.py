@@ -1,8 +1,17 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS, SECRET_KEY
 from database import db
 import models
+from sqlalchemy.exc import SQLAlchemyError
+
+# ---- custom error for invalid input ----
+class InvalidUsage(Exception):
+    def __init__(self, message, status_code=400, payload=None):
+        super().__init__(message)
+        self.message = message
+        self.status_code = status_code
+        self.payload = payload or {}
 
 def create_app():
     app = Flask(__name__)
@@ -10,8 +19,6 @@ def create_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
-    
-    # 🔐 NEW: enable secure sessions
     app.config['SECRET_KEY'] = SECRET_KEY
 
     db.init_app(app)
@@ -25,7 +32,9 @@ def create_app():
     from routes.department_manager import dm_bp
     from routes.company_admin import ca_bp
     from routes.leave_balance import lb_bp
-    from routes.views import views_bp          
+    from routes.views import views_bp      
+    from utils.validation import ValidationError
+    
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(leave_bp, url_prefix="/leave_requests")
@@ -35,12 +44,61 @@ def create_app():
     app.register_blueprint(dm_bp, url_prefix="/department_managers")
     app.register_blueprint(ca_bp, url_prefix="/company_admins")
     app.register_blueprint(lb_bp, url_prefix="/leave_balances")
-    app.register_blueprint(views_bp, url_prefix="/views") 
+    app.register_blueprint(views_bp, url_prefix="/views")
+
+    # -----------------------------
+    # ERROR HANDLERS
+    # -----------------------------
+
+    # 404 – not found
+    @app.errorhandler(404)
+    def handle_404(e):
+        return jsonify({
+            "error": "Not Found",
+            "message": "The requested resource was not found."
+        }), 404
+
+    # 500 – generic server error
+    @app.errorhandler(500)
+    def handle_500(e):
+        return jsonify({
+            "error": "Server Error",
+            "message": "An unexpected error occurred on the server."
+        }), 500
+
+    # Database failure (SQLAlchemyError)
+    @app.errorhandler(SQLAlchemyError)
+    def handle_db_error(e):
+        db.session.rollback()
+        return jsonify({
+            "error": "Database Error",
+            "message": "A database error occurred.",
+            "details": str(e.__cause__ or e)
+        }), 500
+
+    # Invalid input (our custom exception)
+    @app.errorhandler(InvalidUsage)
+    def handle_invalid_usage(err):
+        resp = {
+            "error": "Invalid Input",
+            "message": err.message
+        }
+        resp.update(err.payload)
+        return jsonify(resp), err.status_code
+     # Invalid input via ValidationError (from utils.validation)
+    @app.errorhandler(ValidationError)
+    def handle_validation_error(err):
+        resp = {
+            "error": "Invalid Input",
+            "message": err.message,
+            "details": err.details
+        }
+        return jsonify(resp), 400
 
     return app
 
 # -----------------------------
-# IMPORTANT: GLOBAL APP INSTANCE
+# GLOBAL APP INSTANCE
 # -----------------------------
 app = create_app()
 

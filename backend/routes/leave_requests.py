@@ -81,27 +81,19 @@ def create_leave_request():
     cid = session.get("cid")
     eid = session.get("eid")
 
-    try:
-        require_fields(data, ["sdate", "edate", "type"])
+    # Let ValidationError bubble to the global handler
+    require_fields(data, ["sdate", "edate", "type"])
+    sdate = parse_date(data["sdate"], "sdate")
+    edate = parse_date(data["edate"], "edate")
 
-        sdate = parse_date(data["sdate"], "sdate")
-        edate = parse_date(data["edate"], "edate")
+    days = (edate - sdate).days + 1
+    if days <= 0:
+        raise ValidationError(
+            "Leave days must be greater than 0",
+            {"sdate": data["sdate"], "edate": data["edate"], "days": days}
+        )
 
-        # 🔹 explicit range check: leave days > 0
-        days = (edate - sdate).days + 1
-        if days <= 0:
-            raise ValidationError(
-                "Leave days must be greater than 0",
-                {"sdate": data["sdate"], "edate": data["edate"], "days": days}
-            )
-
-        leavetype = data["type"]
-
-    except ValidationError as ve:
-        return jsonify({
-            "message": ve.message,
-            "details": ve.details
-        }), 400
+    leavetype = data["type"]
 
     new_request = LeaveRequest(
         eid=eid,
@@ -115,6 +107,7 @@ def create_leave_request():
     db.session.add(new_request)
     db.session.commit()
     return jsonify({"message": "Leave request created!"}), 201
+
 
 
 
