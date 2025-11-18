@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify, session
 from database import db
 from models import LeaveRequest, Employee
 from routes.auth_utils import login_required, role_required
+from utils.validation import require_fields, parse_date, ValidationError
 
 # Create a Blueprint for leave request routes
 leave_bp = Blueprint('leave', __name__)
@@ -80,12 +81,27 @@ def create_leave_request():
     cid = session.get("cid")
     eid = session.get("eid")
 
-    sdate = data.get('sdate')
-    edate = data.get('edate')
-    leavetype = data.get('type')
+    try:
+        require_fields(data, ["sdate", "edate", "type"])
 
-    if not sdate or not edate or not leavetype:
-        return jsonify({"message": "sdate, edate, and type are required"}), 400
+        sdate = parse_date(data["sdate"], "sdate")
+        edate = parse_date(data["edate"], "edate")
+
+        # 🔹 explicit range check: leave days > 0
+        days = (edate - sdate).days + 1
+        if days <= 0:
+            raise ValidationError(
+                "Leave days must be greater than 0",
+                {"sdate": data["sdate"], "edate": data["edate"], "days": days}
+            )
+
+        leavetype = data["type"]
+
+    except ValidationError as ve:
+        return jsonify({
+            "message": ve.message,
+            "details": ve.details
+        }), 400
 
     new_request = LeaveRequest(
         eid=eid,
@@ -101,6 +117,7 @@ def create_leave_request():
     return jsonify({"message": "Leave request created!"}), 201
 
 
+
 # ----------------------
 # Update a leave request (approve/decline)
 #   - Only ADMIN or MANAGER
@@ -114,13 +131,35 @@ def update_leave_request(rid):
     if not lr:
         return jsonify({"message": "Leave request not found"}), 404
 
-    if 'status' in data:
-        lr.status = data['status']
-    if 'approvedby' in data:
-        lr.approvedby = data['approvedby']
+    try:
+        # optional validation for status
+        if "status" in data:
+            allowed_status = {"Pending", "Approved", "Rejected"}
+            status = data["status"]
+            if status not in allowed_status:
+                raise ValidationError(
+                    "Invalid status value",
+                    {"allowed_values": list(allowed_status), "received": status}
+                )
+            lr.status = status
+
+        if "approvedby" in data:
+            if data["approvedby"] is not None and not str(data["approvedby"]).strip():
+                raise ValidationError(
+                    "approvedby cannot be empty string",
+                    {"approvedby": data["approvedby"]}
+                )
+            lr.approvedby = data["approvedby"]
+
+    except ValidationError as ve:
+        return jsonify({
+            "message": ve.message,
+            "details": ve.details
+        }), 400
 
     db.session.commit()
     return jsonify({"message": "Leave request updated!"})
+
 
 
 # ----------------------
