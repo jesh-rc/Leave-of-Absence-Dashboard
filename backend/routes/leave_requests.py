@@ -1,7 +1,7 @@
 # routes/leave_requests.py
 
 from flask import Blueprint, request, jsonify, session
-from app import db
+from database import db
 from models import LeaveRequest, Employee
 from routes.auth_utils import login_required, role_required
 

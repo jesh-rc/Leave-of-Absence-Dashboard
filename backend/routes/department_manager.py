@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app import db
+from database import db
 from models import DepartmentManager
 
 dm_bp = Blueprint('department_manager', __name__)

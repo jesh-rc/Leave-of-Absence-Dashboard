@@ -1,4 +1,3 @@
--- VIEW 1: employee + department + company
 CREATE OR REPLACE VIEW view1 AS
 SELECT
     e.eid,
@@ -14,7 +13,7 @@ JOIN department d
 JOIN company c
     ON c.cid = e.cid;
 
--- VIEW 2: top department by size in each company
+
 CREATE OR REPLACE VIEW view2 AS
 SELECT
     d.cid,
@@ -34,7 +33,6 @@ HAVING COUNT(e.eid) >= ALL (
     GROUP BY d2.did
 );
 
--- VIEW 3: employees whose used leave for a type is above company average
 CREATE OR REPLACE VIEW view3 AS
 SELECT
     e.cid,
@@ -53,7 +51,7 @@ WHERE lb.useddays > (
       AND lb2.leavetype = lb.leavetype
 );
 
--- VIEW 4: user accounts vs employees (who has / does not have an account)
+
 CREATE OR REPLACE VIEW view4 AS
 SELECT
     COALESCE(ua.cid, e.cid) AS cid,
@@ -66,7 +64,7 @@ FROM user_account ua
 FULL JOIN employee e
     ON ua.cid = e.cid AND ua.eid = e.eid;
 
--- VIEW 5: employees with only pending/rejected requests, no approved ones
+
 CREATE OR REPLACE VIEW view5 AS
 WITH needs_action AS (
     SELECT DISTINCT cid, eid
@@ -87,7 +85,7 @@ FROM (
 JOIN employee emp
     ON emp.cid = e.cid AND emp.eid = e.eid;
 
--- VIEW 6: manager and direct reports per department
+
 CREATE OR REPLACE VIEW view6 AS
 SELECT
     d.cid,
@@ -106,7 +104,7 @@ LEFT JOIN employee e
     ON e.cid = d.cid AND e.did = d.did
 GROUP BY d.cid, d.did, d.dname, dm.eid, m.fname, m.lname;
 
--- VIEW 7: total / used / remaining leave per employee (all leave types)
+
 CREATE OR REPLACE VIEW view7 AS
 SELECT
     lb.cid,
@@ -121,7 +119,7 @@ JOIN employee emp
     ON emp.cid = lb.cid AND emp.eid = lb.eid
 GROUP BY lb.cid, lb.eid, emp.fname, emp.lname;
 
--- VIEW 8: leave requests from the last 30 days
+
 CREATE OR REPLACE VIEW view8 AS
 SELECT
     lr.cid,
@@ -141,7 +139,7 @@ LEFT JOIN department d
     ON d.cid = e.cid AND d.did = e.did
 WHERE lr.createdat >= CURRENT_DATE - INTERVAL '30 days';
 
--- VIEW 9: pending requests + approver name or "Unassigned"
+
 CREATE OR REPLACE VIEW view9 AS
 SELECT
     lr.cid,
@@ -160,7 +158,7 @@ LEFT JOIN employee a
     ON a.cid = lr.cid AND a.eid = lr.approvedby
 WHERE lr.status = 'Pending';
 
--- VIEW 10: account coverage per company
+
 CREATE OR REPLACE VIEW view10 AS
 SELECT
     c.cid,

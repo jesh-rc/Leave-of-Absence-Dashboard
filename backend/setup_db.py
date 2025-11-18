@@ -99,5 +99,6 @@ with app.app_context():
         db.session.execute(text(stmt))
 
     db.session.commit()
+    print("SQL views created.")
 
 print("Database setup complete!")
