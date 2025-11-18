@@ -35,6 +35,7 @@ def create_app():
     from routes.views import views_bp
     from routes.export_routes import export_bp
     from utils.validation import ValidationError
+    from routes.webservice import ws_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(leave_bp, url_prefix="/leave_requests")
@@ -46,6 +47,8 @@ def create_app():
     app.register_blueprint(lb_bp, url_prefix="/leave_balances")
     app.register_blueprint(views_bp, url_prefix="/views")
     app.register_blueprint(export_bp, url_prefix="/export")
+    app.register_blueprint(ws_bp, url_prefix="/webservice") 
+    
 
     # -----------------------------
     # ERROR HANDLERS
