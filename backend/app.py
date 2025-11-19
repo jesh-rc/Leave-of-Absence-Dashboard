@@ -1,9 +1,16 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+import os
+from flask import Flask, jsonify, send_from_directory
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS, SECRET_KEY
 from database import db
-import models
+import models  # ensure models are imported so SQLAlchemy knows them
 from sqlalchemy.exc import SQLAlchemyError
+
+# ---------------------------------------------------
+# Paths to the built React app
+# ---------------------------------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_BUILD = os.path.join(BASE_DIR, "..", "frontend", "build")
+
 
 # ---- custom error for invalid input ----
 class InvalidUsage(Exception):
@@ -13,17 +20,27 @@ class InvalidUsage(Exception):
         self.status_code = status_code
         self.payload = payload or {}
 
-def create_app():
-    app = Flask(__name__)
-    CORS(app)
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
-    app.config['SECRET_KEY'] = SECRET_KEY
+def create_app():
+    # Tell Flask where the built React app lives
+    app = Flask(
+        __name__,
+        static_folder=FRONTEND_BUILD,
+        static_url_path="/"
+    )
+
+    # ---------------------------------------------------
+    # Flask configuration
+    # ---------------------------------------------------
+    app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = SQLALCHEMY_TRACK_MODIFICATIONS
+    app.config["SECRET_KEY"] = SECRET_KEY
 
     db.init_app(app)
 
-    # register blueprints
+    # ---------------------------------------------------
+    # Register blueprints (your API routes)
+    # ---------------------------------------------------
     from routes.auth import auth_bp
     from routes.leave_requests import leave_bp
     from routes.employee import employee_bp
@@ -34,8 +51,8 @@ def create_app():
     from routes.leave_balance import lb_bp
     from routes.views import views_bp
     from routes.export_routes import export_bp
-    from utils.validation import ValidationError
     from routes.webservice import ws_bp
+    from utils.validation import ValidationError
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(leave_bp, url_prefix="/leave_requests")
@@ -47,12 +64,11 @@ def create_app():
     app.register_blueprint(lb_bp, url_prefix="/leave_balances")
     app.register_blueprint(views_bp, url_prefix="/views")
     app.register_blueprint(export_bp, url_prefix="/export")
-    app.register_blueprint(ws_bp, url_prefix="/webservice") 
-    
+    app.register_blueprint(ws_bp, url_prefix="/webservice")
 
-    # -----------------------------
-    # ERROR HANDLERS
-    # -----------------------------
+    # ---------------------------------------------------
+    # Error handlers
+    # ---------------------------------------------------
 
     @app.errorhandler(404)
     def handle_404(e):
@@ -97,14 +113,39 @@ def create_app():
 
     return app
 
+
 # -----------------------------
 # GLOBAL APP INSTANCE
 # -----------------------------
 app = create_app()
 
-@app.route("/")
-def home():
-    return {"message": "Flask backend connected to PostgreSQL!"}
+
+# ---------------------------------------------------
+# Serve the built React app
+# ---------------------------------------------------
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_react(path):
+    """
+    Serve the React single-page app from the build folder.
+    If the requested file exists (e.g. /static/js/main.js),
+    serve that file. Otherwise, serve index.html and let
+    React Router handle the route (/login, /admin, etc.).
+    """
+    # If the path points to an actual file in the build dir, serve it
+    full_path = os.path.join(FRONTEND_BUILD, path)
+    if path != "" and os.path.exists(full_path):
+        return send_from_directory(FRONTEND_BUILD, path)
+
+    # Otherwise, always serve index.html (SPA entry point)
+    return send_from_directory(FRONTEND_BUILD, "index.html")
+
+
+# Optional: simple health-check endpoint if you want JSON
+@app.route("/api/health")
+def health():
+    return {"status": "ok", "message": "Flask + React are running."}
+
 
 if __name__ == "__main__":
     app.run(debug=True)

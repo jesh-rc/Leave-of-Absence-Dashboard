@@ -1,5 +1,6 @@
 # Ignore environment variable files
 backend/.env
+frontend/.env
 
 # Python cache / compiled files
 backend/__pycache__/

@@ -6,13 +6,12 @@ from config import (
     EMAIL_FROM_NAME,
     EMAIL_FROM_ADDRESS,
 )
-from models import Employee
+from models import Employee, UserAccount  # 🔹 add UserAccount import
 
 
-# Map (cid, eid) to real email addresses for demo accounts
-# Replace these with your actual values
+# Optional: keep a mapping for old hard-coded demo accounts
+# This is now used as a *fallback* if username is not an email.
 EMPLOYEE_EMAILS = {
-    # example entries, change to match your sample_data
     (1, 101): "vishnu.piraliyil@ontariotechu.net",
     (1, 102): "risanth.sivarajah@ontariotechu.net",
     (1, 103): "wahab.alam@ontariotechu.net",
@@ -23,9 +22,22 @@ EMPLOYEE_EMAILS = {
 
 def get_employee_email(cid, eid):
     """
-    For the project we only need real emails for a few demo users.
-    Other employees keep their fake addresses and will not receive mail.
+    Determine which email to use for this employee.
+
+    Priority:
+      1. user_account.username, if it looks like a real email (used for
+         employees created via the Admin 'Create Employee' form).
+      2. Fallback to EMPLOYEE_EMAILS mapping for older hard-coded demo users.
     """
+    # 1) Try to read from user_account.username
+    ua = UserAccount.query.filter_by(cid=cid, eid=eid).first()
+    if ua and ua.username:
+        username = ua.username.strip()
+        if "@" in username:
+            # Treat username as an email address
+            return username
+
+    # 2) Fallback: old hard-coded mapping
     return EMPLOYEE_EMAILS.get((cid, eid))
 
 
@@ -35,6 +47,9 @@ def send_raw_email(to_email, subject, text_body):
     """
     if not EMAIL_API_URL or not EMAIL_API_KEY:
         print("Email API not configured, skipping send")
+        print(f"  To: {to_email}")
+        print(f"  Subject: {subject}")
+        print(f"  Body:\n{text_body}")
         return False
 
     print(f"Sending email to {to_email} with subject {subject}")
@@ -68,7 +83,10 @@ def send_leave_created_email(leave_request):
 
     to_email = get_employee_email(cid, eid)
     if not to_email:
-        print("No real email configured for this employee, skipping notification")
+        print(
+            f"No email configured for cid={cid}, eid={eid}, "
+            "skipping 'leave created' notification"
+        )
         return False
 
     employee = Employee.query.filter_by(cid=cid, eid=eid).first()
@@ -100,7 +118,10 @@ def send_leave_status_update_email(leave_request):
 
     to_email = get_employee_email(cid, eid)
     if not to_email:
-        print("No real email configured for this employee, skipping notification")
+        print(
+            f"No email configured for cid={cid}, eid={eid}, "
+            "skipping 'status update' notification"
+        )
         return False
 
     employee = Employee.query.filter_by(cid=cid, eid=eid).first()

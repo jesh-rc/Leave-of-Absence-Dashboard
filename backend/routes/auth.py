@@ -1,10 +1,16 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, make_response, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import db
 from models import UserAccount, CompanyAdmin, DepartmentManager
+from flask_cors import cross_origin
 
 auth_bp = Blueprint('auth', __name__)
 
+# 🔹 Preflight handler for /auth/login
+@auth_bp.route("/login", methods=["OPTIONS"])
+def login_options():
+    # Empty 204 response; CORS headers get added by app.after_request
+    return make_response("", 204)
 
 def get_user_role(cid: int, eid: int) -> str:
     """Return 'ADMIN', 'MANAGER', or 'EMPLOYEE' for this user."""
@@ -19,7 +25,13 @@ def get_user_role(cid: int, eid: int) -> str:
     return "EMPLOYEE"
 
 
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route("/login", methods=["POST", "OPTIONS"])
+@cross_origin(
+    origins=["http://localhost:3000"],
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["POST", "OPTIONS"]
+)
 def login():
     data = request.get_json() or {}
     username = data.get('username')
